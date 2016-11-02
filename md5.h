@@ -2,7 +2,6 @@
 #define MD5_H_
 
 #define MD5_DIGEST_LENGTH 16
-#define CHECKFILE "check.md5"
 
 /* Any 32-bit or wider unsigned integer data type will do */
 typedef unsigned int MD5_u32plus;

@@ -1,6 +1,8 @@
 #include<stdio.h>
 #include"md5.h"
 
+#define CHECKFILE "check.md5"
+
 int main(int argc, const char *argv[])
 {
 	int i;

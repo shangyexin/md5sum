@@ -48,10 +48,10 @@ int checkmd5(const char *filename,const char *md5list)
  		sprintf(buf_temp,"%02x", md5[i]);
  		strncat(buf_search,buf_temp,2);
  	}
- 	printf("buf_search:%s\n",buf_search);
+//	printf("buf_search:%s\n",buf_search);
 			
  	while(NULL != fgets(buf_check,33,listFile)){
- 		printf("buf_check:%s\n",buf_check);
+// 		printf("buf_check:%s\n",buf_check);
  		if(0 == strncmp(buf_search,buf_check,32)){
  			printf("%s: verify success!\n",filename);
  			find = 1;
