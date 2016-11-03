@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <sys/stat.h>
+
 #include "md5.h"
 
 #define MD5_LENTH 32
@@ -22,10 +24,33 @@ FILE *safe_fopen(const char *filename,const char *mode)
 }
 
 /** 
+ * 校验传入的文件名是不是目录
+ * @param filename   待校验文件名
+ * @return 是目录返回0，错误返回-1，其他返回1
+*/
+
+int isDir(const char *filename)
+{
+	struct stat sb;
+ 
+	if (stat(filename, &sb) == -1) {
+		perror("stat");
+		return -1;
+	}
+ 
+	if(S_IFDIR == (sb.st_mode & S_IFMT)) {
+		printf("%s: is a directory\n",filename);               
+		return 0;
+	}
+	else	
+		return 1;
+}
+
+/** 
  * 校验文件md5值，在文件列表中查询文件是否被篡改
  * @param filename   待校验文件名
  * @param md5list   文件MD5值列表 
- * @return 成功返回0，错误返回-1
+ * @return 成功返回0，失败返回-1，未校验返回1
 */
 
 int checkmd5(const char *filename,const char *md5list)
@@ -36,6 +61,10 @@ int checkmd5(const char *filename,const char *md5list)
     FILE *inFile,*listFile;
     MD5_CTX mdContext;
     unsigned char data[1024];
+    
+    if(-1 == isDir(filename) || 0 == isDir(filename)){
+    	return 1;
+    }
 	
     inFile = safe_fopen(filename,"rb");	
 	listFile = safe_fopen(md5list,"r");
