@@ -11,18 +11,23 @@
 #include <time.h>
 
 #include "md5algorithm.h"
-#include "md5check.h"
 
-#define MD5_LENTH 32
-#define MSG_LENTH 128
-#define PATH_LENTH 256
+#define MD5_LENTH           32
+#define MSG_LENTH           128
+#define MD5_DIGEST_LENGTH   16
+#define PATH_LENTH          256
 
-#define RECORD_FILE_PATH    "/media/disk/"
-#define RECORD_FILE_PREFIX  "update_"
+#define RECORD_FILE_PATH    "/media/disk/"      /*检验结果记录文件的创建路径，默认输出到U盘*/
+#define RECORD_FILE_PREFIX  "update_"           /*检验结果记录文件前缀*/
+#define DEFAULT_ROOT_PATH   "/"                 /*默认目标校验根目录，会与check.md5中的文件名进行拼接*/
 
 static char md5_current[MD5_LENTH+1] = {0};
 
-char *getCurrentTime(void)
+/**
+ * 获取当前系统时间
+ * @return 时间字符串
+*/
+char *get_current_time(void)
 {
     time_t timep;
     struct tm *p = NULL;
@@ -67,8 +72,7 @@ char *getCurrentTime(void)
  * @param filename   待校验文件名
  * @return 是普通文件返回0，其他返回1，错误返回-1
 */
-
-int isFile(const char *filename)
+int is_file(const char *filename)
 {
 	struct stat buf;
 
@@ -93,7 +97,6 @@ int isFile(const char *filename)
  * @param filename   待校验文件名
  * @return 校验完成返回md5字符串，校验失败返回NULL
 */
-
 char *md5_check(const char *filename)
 {
 	unsigned char md5[MD5_DIGEST_LENGTH];
@@ -130,7 +133,6 @@ char *md5_check(const char *filename)
  * @param rootpath  根文件系统路径
  * @return 校验完成返回0，错误失败返回-1
 */
-
 int md5_check_list(const char *md5list,const char *rootpath)
 {
     int ret = 0;
@@ -151,13 +153,13 @@ int md5_check_list(const char *md5list,const char *rootpath)
     /*打开待校验列表文件*/
 	listFile = fopen(md5list,"r");
 	if(NULL == listFile){
-		printf("[md5_check]open %s failed!\n",md5list);
+		printf("[md5_check] Open %s failed!\n",md5list);
 		return -1;
 	}
 
     /*创建结果记录文件*/
-    if( NULL != getCurrentTime() ) {
-        sprintf(record_file,"%s%s%s%s",RECORD_FILE_PATH,RECORD_FILE_PREFIX,getCurrentTime(),".log");
+    if( NULL != get_current_time() ) {
+        sprintf(record_file,"%s%s%s%s",RECORD_FILE_PATH,RECORD_FILE_PREFIX,get_current_time(),".log");
     }else {
         sprintf(record_file,"%s%s%s%s",RECORD_FILE_PATH,RECORD_FILE_PREFIX,"timenull",".log");
     }
@@ -168,7 +170,7 @@ int md5_check_list(const char *md5list,const char *rootpath)
         write(fd_md5,note,strlen(note));
         write(fd_md5,"\n",1);
     } else {
-        printf("[Md5Check] open %s failed! MD5 check quit-----------------\n",record_file);
+        printf("[md5_check] Open %s failed! md5 check quit-----------------\n",record_file);
         return -1;
     }
 
@@ -180,14 +182,14 @@ int md5_check_list(const char *md5list,const char *rootpath)
 
         /*拼接文件名*/
         if (rootpath == NULL) {
-            snprintf(filename, PATH_LENTH, "%s%s", "/", entryname);
+            snprintf(filename, PATH_LENTH, "%s%s", DEFAULT_ROOT_PATH, entryname);
         }
         else {
             snprintf(filename, PATH_LENTH, "%s%s", rootpath, entryname);
         }
 
         /*检验传入的文件名是否为普通文件，不是的话不校验*/
-        ret = isFile(filename);
+        ret = is_file(filename);
         if( -1 == ret ){
             write(fd_md5,none_msg,strlen(none_msg));
             write(fd_md5,filename,strlen(filename));
